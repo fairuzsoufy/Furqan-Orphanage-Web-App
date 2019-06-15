@@ -1,0 +1,99 @@
+
+<script type="text/javascript">  
+     google.charts.load('current', {'packages':['corechart']});  
+     google.charts.setOnLoadCallback(drawChart);  
+     google.charts.setOnLoadCallback(drawChart2);
+
+     function drawChart()  
+           {  
+               jQuery.ajax({
+			url: "childBackEnd.php",
+			data: 'method=getChildStat',
+			type: "GET",
+			success:function(data2)
+			{
+                    var json = JSON.parse(data2);
+                    var number1=parseInt(json[0].number);
+                    var number2=parseInt(json[1].number);
+                    data = google.visualization.arrayToDataTable
+                    ([
+                         ['Task', 'Hours per Day'],
+                         ['الذكور',  number1],
+                         ['الإناث',number2]
+                    ]);                 
+                    
+                    var options = {  
+                      title: 'نسبة الأطفال الذكور والإناث',  
+                      is3D:true,  
+                      pieHole: 0.4  
+                     };  
+                    var chart = new google.visualization.PieChart(document.getElementById('piechart'));  
+                    chart.draw(data, options);  
+
+			},
+				error: function(jqXHR, textStatus, errorThrown)
+				{
+					alert(" Failed!");
+				}          
+      	});
+           }  
+           
+           
+     function drawChart2()
+     {
+
+          var options = 
+          {
+               title: ' نسبه الأطفال في كل فرع ',
+               is3D: true
+          };
+
+          $.ajax(
+          {
+            url: "childBackEnd.php",
+            data: 'method=getChildStat2',
+            type: "GET",
+            success: function(data) 
+            {
+                var data = JSON.parse(data);
+                var arrValues = [['Month', 'Sales Figure']];        // DEFINE AN ARRAY.
+                var iCnt = 0;
+                
+                $.each(data, function() 
+                {
+                    arrValues.push([data[iCnt].address, parseInt(data[iCnt].number)]);
+                    iCnt++;
+                });
+
+                var figures = google.visualization.arrayToDataTable(arrValues);
+                
+
+                var chart = new google.visualization.PieChart(document.getElementById('piechart2'));
+
+                chart.draw(figures, options);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) 
+            {
+                alert(errorThrown);
+            }
+        });
+    } 
+
+</script> 
+<div class="restOfForm container-fluid">
+
+
+<div style="width:100%; margin-left: auto;margin-right: auto; text-align:center; padding-top:20px;padding-bottom:20px;"> 
+<h1> احصائيات الاطفال</h1></div>
+
+        <div id="piechart" style="width:600px; height: 400px; margin:auto;"></div>
+        <div style="margin-top:20px;"></div>
+        <div id="piechart2" style="width:600px; height: 400px; margin:auto;"></div>
+
+
+      
+       
+</div>
+  
+
+

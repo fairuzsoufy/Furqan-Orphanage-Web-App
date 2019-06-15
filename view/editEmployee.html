@@ -1,0 +1,649 @@
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.18/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.18/datatables.min.js"></script>
+
+<script>
+
+function showFields(id)
+{
+    jQuery.ajax(
+        {
+          url: "UserController.php",
+          data: 'method=getEmployeeDetails&id='+id,
+          type: "GET",
+          success:function(data2)
+          {
+            var employee = JSON.parse(data2);
+            $("#viewUpdate #name").val(employee.name);
+            $("#viewUpdate #SSN").val(employee.SSN);
+            $("#viewUpdate #DOB").val(employee.DOB);
+            $("#viewUpdate #DOW").val(employee.date_of_work);
+            $("#viewUpdate #salary").val(employee.salary);
+            $("#viewUpdate #mobile").val(employee.mobile);
+
+
+            employee.branch.forEach(function(item,index) {
+                $('#branch')
+                    .append($("<option></option>")
+                    .attr("value",item.id)
+                    .attr("selected", item.selected)
+                    .text(item.address));
+              
+            });
+            employee.role.forEach(function(item,index) {
+                $('#nonSystemuser')
+                    .append($("<option></option>")
+                    .attr("value",item.id)
+                    .attr("selected", item.selected)
+                    .text(item.name));
+              
+            });
+            $("input[name=systemUser][value=" + employee.parent_id + "]").prop('checked', true);
+            $("input[name=exampleRadios][value=" + employee.gender + "]").prop('checked', true);
+            $("#username").val(employee.userName);
+            $("#viewUpdate #editbutton").val(id);
+            $('#viewUpdate').show();
+            $(".tester").hide();
+
+            if(employee.parent_id==1)
+		{
+			$("#credentials").show();
+			$("#username").show();
+			$("#pass").show();
+			$("#username").show();
+			$("#hide").show();
+			$("#hidee").show();
+			$("#nonSystemuser1").show();
+		}
+		else
+		{$("#nonSystemuser1").show();
+			$("#credentials").hide();
+		}
+        $('#editbutton').val(id);
+          }
+                  
+        });
+}   
+ function UsershowFields(id)
+{
+    jQuery.ajax(
+        {
+          url: "UserController.php",
+          data: 'method=getUserDetails&id='+id,
+          type: "GET",
+          success:function(data2)
+          {
+            var employee = JSON.parse(data2);
+            $("#credentials #username").val(employee.username);
+            $("#credentials #Usereditbutton").val(id);
+            $('#credentials').show();
+           $("#dtBasicExample").hide();
+          }
+                  
+        });
+}
+
+function deleteEmployee(id)
+ {
+     
+    var data = new FormData();
+    data.append('method', 'deleteEmployee');
+            data.append('id',id);
+            jQuery.ajax ({
+        
+        url: "UserController.php",
+        data: data,
+        type: "POST",
+        cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+      success:function(data2)
+      {
+          alert("done");
+       location.reload();
+      }
+              
+    });	
+ }
+ function deleteUser(id)
+ {
+     
+    var data = new FormData();
+    data.append('method', 'deleteUser');
+            data.append('id',id);
+            jQuery.ajax ({
+        
+        url: "UserController.php",
+        data: data,
+        type: "POST",
+        cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+      success:function(data2)
+      {
+       
+          alert("done");
+            location.reload();
+      }
+              
+    });	
+ }
+$(function()
+	{
+        $("#update_employee_form").submit(function(e)
+        {
+			e.preventDefault();	
+			var data = new FormData();
+            parentId=$("input[type='radio'][name='systemUser']:checked").val();
+			data.append('name',$('#name').val());
+			data.append('SSN',$('#SSN').val());
+			data.append('DOB',$('#DOB').val());
+            data.append('DOW',$('#DOW').val());
+            data.append('salary',$('#salary').val());
+            data.append('mobile',$('#mobile').val());
+            data.append('parentId',parentId);
+            data.append('roleId',$('#nonSystemuser').val());
+			data.append('method', 'UpdateEmployeeDone');
+            data.append('id',$('#editbutton').val());
+			data.append('gender',$('input[name=exampleRadios]:checked').val());
+            data.append('branch', $('#branch').val());
+           
+            if(parentId==1 && ($.trim($("#pass").val())== ''||$.trim($("#username").val())== ''||$('#username').val()==""||$('#pass').val()==""))
+				{
+					alert("برجاء ادخال ");
+                    return;
+				}
+                else if(parentId==1 &&(!checkUserName()))
+                {
+                    return;
+                }
+                else if($.trim($("#name").val())== '')
+					{
+						alert("برجاء ادخال جميع البيانات");
+					} 
+                // else if (!checkUserName())
+				// {
+				// 	return;
+				// }
+                else if(!checkNationalId())
+                {
+                    return;
+                }
+            else{
+             data.append('username', $('#username').val());
+			data.append('pass', $('#pass').val());
+			jQuery.ajax({
+				url: "UserController.php",
+				data: data,
+				type: "POST",
+				cache: false,
+				processData: false, // Don't process the files
+				contentType: false,
+				success: function(data2)
+				{
+                    alert("Edited Successfully!");
+                    // window.location.replace("UserController.php?method=viewEmployees");
+                    // location.reload();
+				},
+				error: function(jqXHR, textStatus, errorThrown)
+				{
+					alert("Upload Failed!");
+				}          
+			});
+            }	
+		})
+	});
+
+
+function checkUserName()
+{
+	var flag=true;
+    var personId=$('#editbutton').val();
+   var username= $('#username').val();
+    alert(personId);
+	jQuery.ajax({
+			url: "UserController.php",
+            
+			data: 'method=EditcheckUserName&username='+username+'&personId='+personId,
+			type: "GET",
+			async: false,
+			success:function(data)
+			{
+			//   convert convert string returned to json array
+			var data = JSON.parse(data);
+				if(data.flag==false)
+				{
+					alert("هذه اسم المستعمل مسجل من قبل");
+					flag= false;
+				}
+				else
+				{
+					flag=true;
+				}
+			}          
+      	});
+		  return trueOrFalse(flag);
+}
+function checkNationalId()
+{
+	var flag=true;
+    var personId=$('#editbutton').val();
+     var SSN= $('#SSN').val();
+    alert(personId);
+	jQuery.ajax({
+			url: "UserController.php",
+            
+			data: 'method=EditcheckNationalId&nationalId='+SSN+'&personId='+personId,
+			type: "GET",
+			async: false,
+			success:function(data)
+			{
+			//   convert convert string returned to json array
+			var data = JSON.parse(data);
+				if(data.flag==false)
+				{
+					alert("هذا الرقم القومي مسجل من قبل");
+					flag= false;
+				}
+				else
+				{
+					flag=true;
+				}
+			}          
+      	});
+		  return trueOrFalse(flag);
+}
+function trueOrFalse(bool){
+        return bool;
+}
+$(document).ready(function () 
+{
+        $.support.cors = true;
+        $.ajax({
+            url: "UserController.php",
+            data: 'method=getEmployees',
+            type: 'get',
+            cache: false,
+				processData: false, // Don't process the files
+				contentType: false,
+            dataType: 'json',
+            success: function (data) 
+            {
+              var table = $('#dtBasicExample').dataTable
+              ({
+                  
+                    data: data,
+                    columns: [
+                        { 'data': 'name' },
+                        { 'data': 'nationalId' },
+                        { 'data': null,
+                            'render': function (data, type, row) 
+                            {
+                                var x=data.gender;
+                                if(x==0)
+                                {
+                                    return 'ذكر';
+                                }
+                                else
+                                {
+                                    return "انثي";
+                                }
+                                
+                            } 
+                        },
+                        {
+                            'data': null,
+                            'render': function (data, type, row) 
+                            {
+                                return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-edit"></i>تعديل</button>';
+                            }
+                        },
+                        {
+                            'data': null,
+                            'render': function (data, type, row) 
+                            {
+                                return '<button class="btn" onclick="deleteUser('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                            }
+                        }
+                        
+                    ]
+                });
+            },error: function(jqXHR, textStatus, errorThrown)
+				{
+					alert("Upload Failed!");
+				} 
+        });
+    });
+    
+
+    $(function() {
+	$('input[type="radio"][name="systemUser"]').click(function()
+	{
+		$("#nonSystemuser option").remove();
+		parentId=$("input[type='radio'][name='systemUser']:checked").val();
+		if(parentId==1)
+		{
+			$("#credentials").show();
+			$("#username").show();
+			$("#pass").show();
+			$("#username").show();
+			$("#hide").show();
+			$("#hidee").show();
+			$("#nonSystemuser1").show();
+		}
+		else
+		{
+			$("#credentials").hide();
+		}
+      	jQuery.ajax({
+			url: "UserController.php",
+			data: 'method=getRoles&parentId='+parentId,
+			type: "GET",
+		
+			success:function(role)
+			{
+			//   convert convert string returned to json array
+			var roles = JSON.parse(role);
+			roles.forEach(function(item,index) {
+				$('#nonSystemuser')
+				.append($("<option></option>")
+						.attr("value",item.id)
+						.text(item.name)); 
+			});
+			
+			}          
+      	});
+    });
+});
+    
+function filterBy()
+{
+    var e = document.getElementById("choices");
+    var strUser = e.options[e.selectedIndex].value;
+    $.support.cors = true;
+    jQuery.ajax
+    ({
+     
+            url: "childBackEnd.php",
+            data: 'method=filterBy&choice='+strUser,
+            type: "GET",
+            cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+            success:function(data)
+            {
+                
+                var childData = JSON.parse(data);
+                //alert(childData.length);
+                if(childData==false)
+                {
+                    //$("#dtBasicExample").dataTable().fnDestroy();
+                    $('#dtBasicExample').dataTable().fnClearTable();
+                    //var table = $('#dtBasicExample').DataTable();
+                }
+                else
+                {
+                    $("#dtBasicExample").dataTable().fnDestroy();
+                    var table = $('#dtBasicExample').dataTable
+                ({
+                    data: childData,
+                    columns: 
+                    [
+                        { 'data': 'name' },
+                        { 'data': 'national_id' },
+                        { 'data': 'gender' },
+                        {
+                            'data': null,
+                            'render': function (data, type, row) 
+                            {
+                            return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
+                            }
+                        },
+                        {
+                            'data': null,
+                            'render': function (data, type, row) 
+                            {
+                            return '<button class="btn" onclick="deletechild('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                            }
+                        }
+                    ]
+                });
+                }
+                
+                
+                
+            }
+            ,error: function(jqXHR, textStatus, errorThrown)
+            {
+                alert("Upload Failed!");
+                        
+            } 
+    }); 
+
+
+}
+    
+    </script>
+ 
+<div class="restOfForm container-fluid">
+
+    <div class="row tester">
+      <div class="container">
+       <div style="width:100%; margin-left: auto;margin-right: auto; text-align:center; padding-top:20px;padding-bottom:20px;"> 
+        <h1> تفاصيل الموظفون</h1></div>
+        <select id="choices" onchange="filterBy()">
+            <option disabled selected value>اختيار الموظفون  </option> 
+            <option value="3" >الحاليون</option>
+            <option value="4" >السابقون</option>
+            
+                           
+        </select>
+        <table id="dtBasicExample" class="table table-striped listTable" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th class="th-sm">الاسم </th>
+                    <th class="th-sm">الرقم القومي</th>
+                    <th class="th-sm">الجنس</th>
+                    <th class="th-sm">تعديل </th>
+                    <th class="th-sm">مسح</th>
+                </tr>
+                <tbody>
+                
+                </tbody>
+            </thead>
+            
+                            
+        </table>
+        </div>
+    </div>
+
+          
+    <div id="viewUpdate" style="display:none;">
+        
+                <form class="col-md-6 offset-md-3" style="border: 1px solid black;width: 60%;margin: auto;padding-top: 25px;padding-bottom: 50px;text-align: center;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);" id="update_employee_form">
+                    <h1>تعديل موظف</h1>
+                   
+                   <div class="row">
+                           <div class="col-md-6">
+                               <label >الاسم</label>
+                               <input type="text" id="name" class="form-control" required  pattern="[أ-ي' ']{2,50}" onpaste="return false;" placeholder="الاسم" title="ادخال الإسم باللغه العربية"   ><br>
+                           </div>
+                           <div class="col-md-6">
+                               <label>الرقم القومي</label>
+                               <input id="SSN" type="text" class="form-control" required  pattern="[0-9]{14}" onpaste="return false;" placeholder="الرقم القومي" title="الرقم القومي المكون من 14 خانه" >
+                           </div>
+                       
+                                   <div class="col-md-2 offset-md-4">
+                                       <label><input value="0" type="radio" name="exampleRadios"  required>ذكر</label><br>
+                                   </div>
+                                       
+                                   <div class="col-md-2">
+                                       <label><input value="1" type="radio" name="exampleRadios">انثي</label><br>
+                                   </div>
+                               
+                           <div class="col-md-6">
+                               <label>تاريخ الميلاد</label>
+                               <input type="date" id="DOB" class="form-control" required title="الحد الادنى 21 سنه و الاقصى 80 سنه" onkeydown="return false"  ><br>
+                           </div>
+                           <div class="col-md-6">
+                                   <label>تاريخ التعيين</label>
+                                   <input type="date" id="DOW" class="form-control"  required title="ادخال  تاريخ التعيين بحد اقصي سنه مضت " onkeydown="return false"><br>
+                           </div>
+                           <div class="col-md-6">
+                               <label>رقم الموبايل</label>
+                               <input type="text" id="mobile" class="form-control" pattern="[0-9]{11}"><br>
+                           </div>
+                           <div class="col-md-6">
+                               <label>الراتب</label>
+                               <input onkeydown="javascript: return event.keyCode == 69 ? false : true" type="number" id="salary" class="form-control" min="0" max="10000"><br>
+                           </div>
+                           <div class="col-md-6">
+                                   <label>الفرع</label>
+                                   <select id="branch" class="form-control"required> 
+                                   </select>
+                           </div>
+                       
+                           
+                       </div>
+                       <div class="row" style="margin-top:20px">
+                           <div class="col-md-2 offset-md-4">
+                               <label><input value="1" class="form-check-input" id="systemUser1" type="radio" 
+                                   name="systemUser"  required>مستخدم</label><br>
+                           </div>
+                                       
+                           <div class="col-md-2">
+                               <label><input value="2" class="form-check-input" type="radio" 
+                                   name="systemUser" id="systemUser">غير مستخدم</label><br>
+                               
+                           </div>
+       
+       
+                       
+                       </div>
+                       
+       
+                       <div id="nonSystemuser1"class="row">
+                           <div class="col-md-6">
+                               <label >الوظيفه</label>
+                               <select class="form-control"  id="nonSystemuser"></select>
+                           </div>
+                       </div>
+               <!-- ////////////////////////////////////////////// -->
+               
+                       <div id="credentials"class=" credentials row">
+                           <div class="col-md-6">
+                               <label id="hide">اسم المستخدم</label>
+                               <input type="text" id="username" class="form-control"><br>
+                           </div>
+                           <div class="col-md-6">
+                               <label id="hidee" > كلمة السر</label>
+                               <input type="password" id="pass" class="form-control"><br>
+                           </div>
+                       </div>
+       
+       
+           <div class="col-md-4 offset-md-5">
+               <button id="editbutton" type="submit" style="margin-top:20px;color: orange;"class="btn btn-light">تعديل</button>
+           </div>
+                       
+       
+                   
+       </form>
+    </div>
+
+</div>
+<script type="text/javascript">
+    $("#nonSystemuser1").hide();
+	$("#username").hide();
+	$("#pass").hide();
+	$("#username").hide();
+	$("#hide").hide();
+	$("#hidee").hide();
+	$("#togg").hide();
+var today = new Date();
+
+var dd = today.getDate();
+
+var mm = today.getMonth()+1;
+
+var yyy = today.getFullYear()-1;
+
+var y = today.getFullYear();
+
+var yyyy = today.getFullYear()-21;
+
+var yy = today.getFullYear()-80;
+
+if(dd<10){
+
+	dd='0'+dd
+
+		}
+
+	if(mm<10){
+
+	mm='0'+mm
+
+		}
+
+	minDate=yy+'-'+mm+'-'+dd;
+
+	max = yyyy+'-'+mm+'-'+dd;
+
+	min=yyy+'-'+mm+'-'+dd;
+
+	today = y+'-'+mm+'-'+dd;
+
+	
+
+	document.getElementById("DOB").setAttribute("max", max);
+
+	document.getElementById("DOB").setAttribute("min", minDate);
+
+	document.getElementById("DOW").setAttribute("min", min);
+
+	document.getElementById("DOW").setAttribute("max", today);
+
+
+
+	$(".toggle-password").click(function() {
+
+
+
+$(this).toggleClass("fa-eye fa-eye-slash");
+
+var input = $($(this).attr("toggle"));
+
+if (input.attr("type") == "password") {
+
+input.attr("type", "text");
+
+} else {
+
+input.attr("type", "password");
+
+}
+
+});
+
+	   
+
+</script>
+
+<style>
+
+.field-icon {
+
+float: left;
+
+margin-left: 0px;
+
+margin-top: -50px;
+
+position: relative;
+
+}
+
+</style>
+</script>

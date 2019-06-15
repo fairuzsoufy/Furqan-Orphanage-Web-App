@@ -1,0 +1,230 @@
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script src="tafqeet.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<script>
+
+
+	var donorID= undefined;
+	var donarName=undefined;
+	var donorSSN=undefined;
+	$(function() {
+			$("#donation").change(function()
+			{
+			$("#options").hide();
+			var option = $('option:selected', this).attr('valueId');//val();
+			//alert(option);
+			$("#myDiv").load('receiptBackEnd.php', {selectedButtonValue : option}, function() {
+				if(donorID!=undefined)
+				{
+					$("#8").val(donarName);
+					$("#24").val(donorSSN);
+					$("#8").prop('disabled', true);
+					$("#24").prop('disabled', true);
+				}
+			});
+			
+		});
+	});
+
+	$( function() {
+		$( "#donarName" ).autocomplete({
+		source: "receiptBackEnd.php?method=GetDonors",
+		minLength: 2,
+		select: function( event, ui ) {
+			donorID=ui.item.id;
+			donarName=ui.item.value;
+			donorSSN=ui.item.SSN;
+			//log( "Selected: " + ui.item.value + " aka " + ui.item.id );
+		}
+		});
+
+		$("#donationForm").submit(function(event)
+		{
+			event.preventDefault();
+			saveReceipt();
+		});
+	} );
+
+
+	$(function() 
+{
+		
+		jQuery.ajax({
+			url: "receiptBackEnd.php",
+			data: 'method=getTypes',
+			type: "GET",
+			cache: false,
+			processData: false, // Don't process the files
+			contentType: false,
+			success:function(role)
+			{
+				var roles = JSON.parse(role);
+				roles.forEach(function(item,index) {
+					$('#donation')
+					.append($("<option></option>")
+							.attr("value", item.name)
+							.attr("valueId", item.id)
+							.text(item.name)); 
+				});	
+				}
+			,error: function(jqXHR, textStatus, errorThrown)
+			{
+				alert("Upload Failed!");
+						
+			}          
+				});	
+});
+
+
+function checkIfempty()
+{
+	               
+            var inputs= $("#myDiv > div > div").find("input");
+			var flag=true;
+			inputs.each(function(index, item)
+			{
+				if($.trim($(item).val())== '')
+				{
+					alert("برجاء ادخال جميع البينات");
+					 flag=false;
+				}
+	
+			});
+			return trueOrFalse(flag);  
+}
+function checkNationalId()
+{
+	var flag=true;
+	jQuery.ajax({
+			url: "receiptBackEnd.php",
+			data: 'method=CheckNationalId&nationalId='+$('#24').val(),
+			type: "GET",
+			async: false,
+			success:function(data)
+			{
+			//   convert convert string returned to json array
+			var data = JSON.parse(data);
+			
+				if(data.flag==false)
+				{
+				
+					alert("هذا الرقم القومي مسجل من قبل");
+					flag=false;
+				}
+				
+				else 
+				{
+					flag=true;
+				}
+			
+			}   
+			   
+      	});
+		 
+		return  trueOrFalse(flag);  
+}
+function trueOrFalse(bool){
+        return bool;
+}
+
+	function PrintReceipt()
+{
+
+	alert("added Successfully!");
+	
+				
+	var donationName = $('#donation').val();
+	var childName=$('#23').val();
+	window.location= "http://localhost/furqan/receiptBackEnd.php?method=printReceipt&donation="+donationName+"&8="+ $('#8').val()+"&9="+$('#9').val()+"&23="+$('#23 option:selected').text();
+}
+
+	function saveReceipt()
+{
+	var data = new FormData();
+	data.append('method', 'addReceipt');
+	data.append('donationType', $('#donation').val());
+	data.append('donationTypeId', $('option:selected', '#donation').attr('valueId'));
+	data.append('name', $('#8').val());
+	data.append('money', $('#9').val());
+	data.append('donorSSN',$('#24').val());
+	data.append('donorId',donorID);
+
+		if(donorID==undefined&&!checkNationalId())
+		{
+			return;
+		}
+		else if(!checkIfempty())
+		{
+			return;
+		}
+	// var inputs =$("#myDiv > div > div > input");
+	var inputs=$("#myDiv > div > div").find("select, input");
+	inputs.each(function(index, item){
+		var key = $(item).attr('id');
+		var value = {};
+		value.data = $(item).val();
+		value.optionId = $(item).parent().attr('id');
+		if(key != "8" || key !="9"|| key!="24")
+			data.append(key,JSON.stringify(value));
+	});
+			if($('#23').val()!="")
+			{
+				data.append('childId',$('#23').val());
+			}
+		jQuery.ajax({
+			url: "receiptBackEnd.php",
+			data: data,
+			type: "POST",
+			cache: false,
+			processData: false, // Don't process the files
+			contentType: false,
+			// responseType:"blob",
+			success: function(data2)
+			{
+				alert("added Successfully!");
+				PrintReceipt();
+				// window.location.replace("UserController.php?method=AllReceipts");
+			},
+			error: function(jqXHR, textStatus, errorThrown)
+			{
+				alert("Upload Failed!");
+			}          
+		});	
+}
+</script>
+<body>
+	<!-- Big Form-->
+
+	<div class="restOfForm row">
+		<div class="col-md-6 offset-md-3" style="border: 1px solid black;width: 60%;margin: auto;padding-top: 25px;padding-bottom: 50px;text-align: center;
+     box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);">
+			<h1> اضافه ايصال </h1>
+
+			<div class="ui-widget">
+				<label for="donarName">البحث بالرقم القومي: </label>
+				<input id="donarName">
+			</div>
+
+			<label>النوع</label>
+			<select name='donation' id="donation">
+			<option disabled selected value>اختيار نوع تبرع محدد </option> 
+			</select>
+			<form id="donationForm">
+			<div id="myDiv">Click the button to load results
+
+			</div>
+			</form>			
+			</div>
+	</div>
+
+
+
+</body>
+
+
+
+</html>
