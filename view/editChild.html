@@ -1,0 +1,727 @@
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.18/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.18/datatables.min.js"></script>
+
+<script>
+$(document).ready(function () 
+{
+    $.support.cors = true;
+    $.ajax
+    ({
+        url: "childBackEnd.php",
+        data: 'method=getChilderen',
+        type: 'get',
+        dataType: 'json',
+        success: function (data) 
+        {
+            var table = $('#dtBasicExample').dataTable
+            ({
+ 
+                data: data,
+                columns: [
+                { 'data': 'name' },
+                { 'data': 'birthDate' },
+                { 'data': 'nationalId' },
+                {
+                    'data': null,
+                    'render': function (data, type, row) 
+                    {
+                    return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
+                    }
+                },
+                {
+                    'data': null,
+                    'render': function (data, type, row) 
+                    {
+                    return '<button class="btn" onclick="deletechild('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                    }
+                }
+                ]
+            });
+        }
+    });
+});
+function showFields(id)
+{
+ jQuery.ajax(
+ {
+ url: "childBackEnd.php",
+ data: 'method=showUpdate&id='+id,
+ type: "GET",
+ success:function(data2)
+ {
+ var child = JSON.parse(data2); 
+ $("#editbutton").val(id);
+ $("#viewUpdate #Name").val(child.name);
+ $("#viewUpdate #SSN").val(child.SSN);
+ $("#viewUpdate #nasab").val(child.relative);
+ $("#viewUpdate #shoe-size").val(child.shoe_size);
+ $("#viewUpdate #clothes-size").val(child.clothes_size);
+ $("#viewUpdate #DOB").val(child.DOB);
+ $("#viewUpdate #Record-num").val(child.report_num);
+ $("#viewUpdate #Record-date").val(child.report_date);
+ $("#viewUpdate #decision-num").val(child.decision_number);
+ $("#viewUpdate #decision-date").val(child.decision_date);
+ $("input[name=exampleRadios][value=" + child.gender + "]").prop('checked', true);
+ 
+ child.talents.forEach(function(item,index) {
+ $('#talent')
+ .append($("<option></option>")
+ .attr("value",item.id)
+ .attr("selected", item.selected)
+ .text(item.talent_name));
+ 
+ });
+
+ $('#talent').selectpicker();
+ child.gov.forEach(function(item,index) {
+ $('#gov')
+ .append($("<option></option>")
+ .attr("value",item.id)
+ .attr("selected", item.selected)
+ .text(item.governorate_name));
+ 
+ });
+
+ $('#gov').selectpicker();
+
+ child.cities.forEach(function(item,index) 
+ {
+ $('#city')
+ .append($("<option></option>")
+ .attr("value",item.id)
+ .attr("selected", item.selected)
+ .text(item.city_name));
+ 
+ });
+
+ $('#city').selectpicker();
+ 
+ child.stations.forEach(function(item,index) {
+ $('#station')
+ .append($("<option></option>")
+ .attr("value",item.id)
+ .attr("selected", item.selected)
+ .text(item.station_name));
+ 
+ });
+
+ $('#station').selectpicker();
+ 
+ 
+ child.branch.forEach(function(item,index) {
+ $('#branch')
+ .append($("<option></option>")
+ .attr("value",item.id)
+ .attr("selected", item.selected)
+ .text(item.address));
+ 
+ });
+
+ $('#branch').selectpicker();
+ 
+ child.supervisor.forEach(function(item,index) {
+ $('#supervisor')
+ .append($("<option></option>")
+ .attr("value",item.id)
+ .attr("selected", item.selected)
+ .text(item.name));
+ 
+ 
+ $('#viewUpdate').show();
+ $("#viewChild").hide(); 
+ });
+
+ $('#supervisor').selectpicker();
+ 
+ // if(child.gender==1)
+ // {
+ // maleRadio.Checked = true;
+ // }
+ // else
+ // { 
+ // femaleRadio.Checked = true;
+ // }
+
+ 
+ }
+ 
+ });
+}
+// function checkInputs()
+// { var empty = true;
+//     $('input[type="text"]').each(function(){
+//                 if($.trim($(this).val())== '')
+//                 {
+//                     empty =false;
+//                    return empty;
+//                 }
+//                 });
+//                 return empty;
+// }
+function UpdateChild(btn)
+ {
+ event.preventDefault();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        
+
+var date1 = new Date($('#DOB').val());
+            day1 = date1.getDate();
+            month1 = date1.getMonth() + 1;
+            year1 = date1.getFullYear();
+            var date2 = new Date($('#decision-date').val());
+            day2 = date2.getDate();
+            month2 = date2.getMonth() + 1;
+            year2 = date2.getFullYear();
+
+            var date3 = new Date($('#Record-date').val());
+            day3 = date3.getDate();
+            month3 = date3.getMonth() + 1;
+            year3 = date3.getFullYear();
+
+            const isValid = Name.checkValidity();
+
+
+                           
+            // var inputs= $("#viewUpdate").find("input");
+			// var flag=true;
+			// inputs.each(function(index, item)
+			// {
+			// 	if($.trim($(item).val())== '')
+			// 	{
+			// 		 flag=false;
+			// 	}
+	
+			// });
+// var flag=checkInputs();
+// alert (flag);
+			if($.trim($("#Name").val())== '')
+			{
+				alert("برجاء ادخال جميع البيانات");
+			}
+               else if ( !isValid ) {
+            alert(" برجاء ادخال الاسم باللغه العربية")
+            } 
+
+            else if(date2<date1)
+            {
+                alert("تاريخ قرار النيابه قبل تاريخ الميلاد");
+            }
+            else if(date3<date1)
+            {
+                alert("تاريخ قرار المحضر قبل تاريخ الميلاد");
+            }
+            else if(!checkNationalId())
+            {
+                return;
+            }
+            else if(!EditCheckReportNum())
+            {
+                return;
+            }
+            else if(!EditCheckDecisionNum())
+            {
+                return;
+            }
+            else if($('#talent').get(0).selectedIndex == -1)
+            {
+                alert(" برجاء اختيار موهبه ");
+            }
+        else{
+
+
+ var data = new FormData();
+ var arr = [];
+ var id=btn;
+ data.append('name', $('#Name').val());
+            data.append('DOB', $('#DOB').val());
+            data.append('gender',$('input[name=exampleRadios]:checked').val());
+
+            data.append('nasab', $('#nasab').val());
+            data.append('SSN', $('#SSN').val());
+            data.append('station', $('#station').val());
+ data.append('city', $('#city').val());
+ data.append('gov', $('#gov').val());
+ data.append('branch', $('#branch').val());
+            data.append('reportNum', $('#Record-num').val());
+            data.append('reportDate', $('#Record-date').val());
+            data.append('decisionNum', $('#decision-num').val());
+ data.append('decisionDate', $('#decision-date').val());
+ data.append('shoe_size', $('#shoe-size').val());
+ data.append('clothes_size', $('#clothes-size').val());
+ data.append('method', 'editChild');
+ data.append('supervisor', $('#supervisor').val());
+
+ data.append('id',id);
+
+ for(var i=0; i<$("#talent :selected").length;i++)
+         {
+            arr.push($('#talent :selected')[i].value);
+        } 
+ data.append('selectedValues', JSON.stringify(arr));
+ jQuery.ajax({
+                url: "childBackEnd.php",
+                data: data,
+                type: "POST",
+                cache: false,
+                processData: false, // Don't process the files
+                contentType: false,
+                success: function(data2)
+                {
+            // $("#viewChild").show();
+            // $("#viewUpdate").hide();
+            // location.reload();
+                    alert("Uploaded Successfully!");
+                    // window.location.replace("childBackEnd.php");
+                },
+                error: function(jqXHR, textStatus, errorThrown)
+                {
+                    alert("Upload Failed!");
+                } 
+            }); 
+ }
+ }
+function deletechild(id)
+ {
+ 
+        var data = new FormData();
+        data.append('method', 'deleteChild');
+        data.append('id',id);
+        jQuery.ajax({
+                url: "childBackEnd.php",
+                data: data,
+                type: "POST",
+                cache: false,
+                processData: false, // Don't process the files
+                contentType: false,
+                success: function(data2)
+                {
+                    alert("deleted Successfully!");
+                    location.reload();
+                },
+                error: function(jqXHR, textStatus, errorThrown)
+                {
+                    alert("Upload Failed!");
+                } 
+            }); 
+ }
+function branchSelected()
+    {
+        var id = document.getElementById("branch").value;
+        jQuery.ajax({
+            url: "UserController.php",
+            data: 'method=getSupervisorById&id='+id, 
+            type: "GET",
+            cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+            success:function(role)
+            {
+                //afade hena
+                $("#supervisor option").remove();
+
+                var roles = JSON.parse(role);
+                roles.forEach(function(item,index) {
+                    $('#supervisor')
+                    .append($("<option></option>")
+                            .attr("value",item.id)
+                            .text(item.name)); 
+                });
+             $('#supervisor').selectpicker('refresh');
+                }
+            ,error: function(jqXHR, textStatus, errorThrown)
+            {
+                alert("Upload Failed!");
+                        
+            } 
+                }); 
+    }
+function govSelectedGov() 
+    {
+        var govId = document.getElementById("gov").value;
+ 
+        jQuery.ajax({
+            url: "childBackEnd.php",
+            data: 'method=viewCities&govId='+govId,
+            type: "GET",
+            cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+            success:function(role)
+            {
+                //afade hena
+                $("#city option").remove();
+             $("#station option").remove();
+                var roles = JSON.parse(role);
+                roles.forEach(function(item,index) {
+                    $('#city')
+                    .append($("<option></option>")
+                            .attr("value",item.id)
+                            .text(item.city_name)); 
+                });
+            $('#city').selectpicker('refresh');
+                }
+            ,error: function(jqXHR, textStatus, errorThrown)
+            {
+                alert("Upload Failed!");
+                        
+            } 
+                }); 
+
+
+
+    }
+function citySelected()
+    {
+
+        var cityId = document.getElementById("city").value;
+        jQuery.ajax(
+        {
+            url: "childBackEnd.php",
+            data: 'method=getStations&id='+cityId,
+            type: "GET",
+            cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+            success:function(role)
+            {
+                $("#station option").remove();
+
+                var roles = JSON.parse(role);
+                roles.forEach(function(item,index) {
+                    $('#station')
+                    .append($("<option></option>")
+                            .attr("value",item.id)
+                            .text(item.station_name)); 
+            });
+            $('#station').selectpicker('refresh');
+                
+            }
+            ,error: function(jqXHR, textStatus, errorThrown)
+            {
+                alert("Upload Failed!");
+                        
+            } 
+        }); 
+
+    }
+function filterBy()
+{
+    var e = document.getElementById("choices");
+    var strUser = e.options[e.selectedIndex].value;
+    $.support.cors = true;
+    jQuery.ajax
+    ({
+     
+            url: "childBackEnd.php",
+            data: 'method=filterBy&choice='+strUser,
+            type: "GET",
+            cache: false,
+            processData: false, // Don't process the files
+            contentType: false,
+            success:function(data)
+            {
+                
+                var childData = JSON.parse(data);
+                //alert(childData.length);
+                if(childData==false)
+                {
+                    //$("#dtBasicExample").dataTable().fnDestroy();
+                    $('#dtBasicExample').dataTable().fnClearTable();
+                    //var table = $('#dtBasicExample').DataTable();
+                }
+                else
+                {
+                    $("#dtBasicExample").dataTable().fnDestroy();
+                    var table = $('#dtBasicExample').dataTable
+                ({
+                    data: childData,
+                    columns: 
+                    [
+                        { 'data': 'name' },
+                        { 'data': 'birth_date' },
+                        { 'data': 'national_id' },
+                        {
+                            'data': null,
+                            'render': function (data, type, row) 
+                            {
+                            return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
+                            }
+                        },
+                        {
+                            'data': null,
+                            'render': function (data, type, row) 
+                            {
+                            return '<button class="btn" onclick="deletechild('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                            }
+                        }
+                    ]
+                });
+                }
+                
+                
+                
+            }
+            ,error: function(jqXHR, textStatus, errorThrown)
+            {
+                alert("Upload Failed!");
+                        
+            } 
+    }); 
+
+
+}
+function checkNationalId()
+{
+	var flag=true;
+    var personId=$('#editbutton').val();
+     var SSN= $('#SSN').val();
+  
+	jQuery.ajax({
+			url: "UserController.php",
+            
+			data: 'method=EditcheckNationalId&nationalId='+SSN+'&personId='+personId,
+			type: "GET",
+			async: false,
+			success:function(data)
+			{
+			//   convert convert string returned to json array
+			var data = JSON.parse(data);
+				if(data.flag==false)
+				{
+					alert("هذا الرقم القومي مسجل من قبل");
+					flag= false;
+				}
+				else
+				{
+					flag=true;
+				}
+			}          
+      	});
+		  return trueOrFalse(flag);
+}
+function trueOrFalse(bool){
+        return bool;
+}
+
+
+function EditCheckDecisionNum()
+{
+	var flag=true;
+    var personId=$('#editbutton').val();
+     var DecisionNum= $('#decision-num').val();
+  
+	jQuery.ajax({
+			url: "childBackEnd.php",
+            
+			data: 'method=EditCheckDecisionNum&DecisionNum='+DecisionNum+'&id='+personId,
+			type: "GET",
+			async: false,
+			success:function(data)
+			{
+			//   convert convert string returned to json array
+			var data = JSON.parse(data);
+				if(data.flag==false)
+				{
+					alert(" رقم قرارالنيابه  مسجل من قبل");
+					flag= false;
+				}
+				else
+				{
+					flag=true;
+				}
+			}          
+      	});
+		  return trueOrFalse(flag);
+}
+function EditCheckReportNum()
+{
+	var flag=true;
+    var personId=$('#editbutton').val();
+     var ReportNum= $('#Record-num').val();
+
+	jQuery.ajax({
+			url: "childBackEnd.php",
+            
+			data: 'method=EditCheckReportNum&ReportNum='+ReportNum+'&id='+personId,
+			type: "GET",
+			async: false,
+			success:function(data)
+			{
+			//   convert convert string returned to json array
+			var data = JSON.parse(data);
+				if(data.flag==false)
+				{
+					alert(" رقم   المحضر مسجل من قبل");
+					flag= false;
+				}
+				else
+				{
+					flag=true;
+				}
+			}          
+      	});
+		  return trueOrFalse(flag);
+}
+
+
+</script>
+
+<div class="restOfForm container-fluid">
+
+ <div class=" row">
+ <div class="container">
+ <div id="viewChild" style="width:100%; margin-left: auto;margin-right: auto; 
+ text-align:center; padding-top:20px;padding-bottom:20px;"> 
+ <h1> بيانات الأطفال</h1>
+ <select id="choices" onchange="filterBy()">
+    <option disabled selected value>اختيار جنس محدد </option> 
+    <option value="0" >ذكر</option>
+    <option value="1" >انثي</option>
+    
+                   
+</select>
+
+
+ <table id="dtBasicExample" class="table table-striped listTable" cellspacing="0" width="100%">
+ <thead>
+ <tr>
+ <th class="th-sm">الاسم </th>
+ <th class="th-sm">تاريخ الميلاد</th>
+ <th class="th-sm">الرقم القومي</th>
+ <th class="th-sm">تعديل </th>
+ <th class="th-sm">مسح</th>
+ </tr>
+ <tbody>
+ 
+ </tbody>
+ </thead>
+ 
+ 
+ </table>
+
+ </div> 
+ </div> 
+ </div>
+
+
+ <div id="viewUpdate" style="display:none;">
+ <form class="col-md-6 offset-md-3" style="border: 1px solid black;width: 60%;margin: auto;padding-top: 25px;padding-bottom: 50px;text-align: center;
+ box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);" id="add_child_form">
+ <h1> تعديل طفل </h1>    <div class="row">
+ <div class="col-md-6">
+ 
+ <label for="nameInput" >الاسم</label>
+ <input type="text" id="Name" class="form-control" requiredpattern="[أ-ي' ']{2,50}" onpaste="return false;" placeholder="الاسم" title="ادخال الإسم باللغه العربية" ><br>
+ </div>
+ <div class="col-md-6">
+ <label for="nameInput">تاريخ الميلاد</label>
+ <input type="date" id="DOB" class="form-control" required title="ادخال تاريخ الميلاد " onkeydown="return false" ><br>
+ </div>
+ </div>
+
+ <div class="row">
+ <div class="col-md-2 offset-md-4">
+ <label><input value="0" type="radio" name="exampleRadios" required>ذكر</label><br>
+ </div>
+ 
+ <div class="col-md-2">
+ <label><input value="1" type="radio" name="exampleRadios">انثي</label><br>
+ </div>
+ </div>
+ 
+ 
+ <div class="row">
+ <div class="col-md-6">
+ <label>النسب</label>
+ <input disabled id="nasab" type="text" class="form-control" value="مجهول" required onpaste="return false;" placeholder="النسب">
+ </div>
+ <div class="col-md-6">
+ <label>الرقم القومي</label>
+ <input id="SSN" type="text" class="form-control" required pattern="[0-9]{14}" onpaste="return false;" placeholder="الرقم القومي" title="الرقم القومي المكون من 14 خانه">
+ </div>
+ <div class="col-md-6">
+ <label>محافظه العثور</label>
+ <select id="gov" onchange="govSelectedGov()" class="form-control" required>
+ <!-- <option value="-" checked >-</option> -->
+ </select>
+ </div>
+ <div class="col-md-6">
+ <label>مدينه</label>
+ <select id="city" onchange="citySelected()" class="form-control"required> </select>
+ </div>
+ <div class="col-md-6">
+ <label>قسم</label>
+ <select id="station" class="form-control" required> </select>
+ </div>
+ <div class="col-md-6">
+ <label>رقم المحضر</label>
+ <input id="Record-num" onkeydown="javascript: return event.keyCode == 69 ? false : true" type="number" class="form-control" required min=1 max=9999 onpaste="return false;" title="بحد اقصى اربع خانات" placeholder="رقم المحضر">
+ </div>
+ <div class="col-md-6">
+ <label>تاريخ المحضر</label>
+ <input id="Record-date" type="date" class="form-control" required title="ادخال تاريخ المحضر " onkeydown="return false" >
+ </div>
+ <div class="col-md-6">
+ <label>رقم قرار النيابه</label>
+ <input id="decision-num" type="number"  class="form-control" onkeydown="javascript: return event.keyCode == 69 ? false : true"  min=1 max=9999 onpaste="return false;" title="بحد اقصى اربع خانات" placeholder="رقم قرار النيابه">
+ </div>
+ <div class="col-md-6">
+ <label>تاريخ قرار النيابه</label>
+ <input id="decision-date"type="date" class="form-control" required title="ادخال تاريخ قرار النيابة " onkeydown="return false" >
+ </div>
+ <div class="col-md-6">
+ <label>مقاس الملابس</label>
+ <input id="clothes-size" onkeydown="javascript: return event.keyCode == 69 ? false : true" type="number" min="1" max="21" class="form-control"placeholder="رقم مقاس الملابس" onpaste="return false;" title="حد ادنى 1 و حد اقصى 21 " > >
+ </div>
+ <div class="col-md-6">
+ <label>مقاس الاحذيه</label>
+ <input id="shoe-size" type="number" onkeydown="javascript: return event.keyCode == 69 ? false : true" min="1" max="50" class="form-control" required onpaste="return false;">
+ </div>
+ <div class="col-md-6">
+ <label>الفرع</label>
+ <select id="branch" onchange="branchSelected()" class="form-control"required> 
+ <!-- <option value="-" checked > - </option> -->
+ </select>
+ </div>
+ <div class="col-md-6">
+ <label>الموهبه</label>
+ <select id="talent" multiple data-live-search="true" class="form-control" required > </select>   
+
+ </div>
+ <div class="col-md-6">
+ <label>اسم المشرف</label>
+ <select id="supervisor" class="form-control"required> </select>
+ </div>
+ <div class="row col-md-5 offset-5">
+ <button id="editbutton" onclick="UpdateChild(this.value)" style="margin-top:20px;color: black;
+ "class="btn btn-light">حفظ</button>
+ </div>   
+ 
+ </div>               
+ </form>
+</div>
+</div>
+
+<script>
+    
+ var today = new Date();
+ var dd = today.getDate();
+ var mm = today.getMonth()+1;
+ var yyyy = today.getFullYear();
+ var yy = today.getFullYear()-20;
+ if(dd<10){
+ dd='0'+dd
+ } 
+ if(mm<10){
+ mm='0'+mm
+ } 
+ minDate=yy+'-'+mm+'-'+dd;
+ today = yyyy+'-'+mm+'-'+dd;
+ document.getElementById("DOB").setAttribute("max", today);
+ document.getElementById("DOB").setAttribute("min", minDate);
+ document.getElementById("decision-date").setAttribute("max", today);
+ document.getElementById("Record-date").setAttribute("max", today);
+ 
+</script>

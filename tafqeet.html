@@ -1,0 +1,21 @@
+<meta charset="UTF-8" />
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+
+<script src="tafqeet.js"></script>
+<script>
+function t(){
+  $("#num").text(tafqeet($("#num2").val()));  
+}
+
+
+</script>
+<html>
+    <body>
+        <input id="num2" onkeyup="t()" type="text"></input>
+        <label lang="ar" id ="num"></label>
+        <button onclick="t()">save</button>
+
+
+
+      </body>
+</html>
