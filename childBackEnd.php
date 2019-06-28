@@ -409,35 +409,37 @@ function updateChild()
 
     
  }
- function Getchilderen()
- {
 
-     $person=ClassFactory::build('person');
-     $arr=array();
-     $rows=$person->GetByRoleId(6);
-    
-     if($rows==false)
-     {
-        $obj=(object)['status' =>'false'];
-     }
-     else{
+    function Getchilderen()
+    {
 
-    
-     foreach ( $rows as $row )  
-     { 
         $person=ClassFactory::build('person');
-        $person->id = $row['id'];
-        $person->name = $row['name'];
-        $person->birthDate = $row['birth_date'];
-        $person->nationalId = $row['national_id'];
-        $person->gender = $row['gender'];
-        $person->roleId = $row['role_id'];
-        array_push( $arr, $person );  
-     } 
-      }
-    echo json_encode($arr);
+        $arr=array();
+        $rows=$person->getChildrenDetails();
+    
+        if($rows==false)
+        {
+            $obj=(object)['status' =>'false'];
+        }
+        else
+        {
+            foreach ( $rows as $row )  
+            { 
+                $person=ClassFactory::build('person');
+                $person->id = $row['id'];
+                $person->name = $row['name'];
+                $person->nationalId = $row['national_id'];
+                $person->shoe_size = $row['shoe_size'];
+                $person->clothes_size = $row['clothes_size'];
+                //$person->child_idd = $row['child_idd'];
+                //sana derasya
+                array_push( $arr, $person );  
+            } 
+        }
+        echo json_encode($arr);
 
- }
+    }
+
  function View($file,$person)
  {
      if($person->roleId==3)

@@ -15,6 +15,8 @@ class employee
     public $number;
     public $branch;
     public $address;
+    public $person_id;
+    public $reason;
     public $isdeleted=0;
    
     function GetAll()
@@ -68,10 +70,16 @@ class employee
      function Delete() 
     {
         $conn = db::getInstance();
-            $sql="update " .$this->TableName." SET isdeleted=".$this->isdeleted." WHERE ". $this->TableId ."=".$this->id;
-           echo $sql;
-            $result = mysqli_query($conn,$sql);
+        $sql="update " .$this->TableName." SET isdeleted=".$this->isdeleted." WHERE ". $this->TableId ."=".$this->id;
+        $result = mysqli_query($conn,$sql);
         
+    }
+
+    function addReason()
+    {
+        $conn = db::getInstance();
+        $sql="insert into past_emp (person_id,reason) values (".$this->person_id.",'".$this->reason."')";
+        $result = mysqli_query($conn,$sql);
     }
  
     function getStatistics()

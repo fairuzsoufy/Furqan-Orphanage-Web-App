@@ -193,7 +193,18 @@ else if(isset($_POST['method']) && $_POST['method']=="addJob")
 { 
     addJob();
 }
+else if(isset($_POST['method']) && $_POST['method']=="addReason")
+{
+    addReason();
+} 
 
+function addReason()
+{
+    $employee = new employee();
+    $employee->reason=$_POST['reason'];
+    $employee->person_id=$_POST['id'];
+    $employee->addReason();
+}
 
 function getEmpStat()
 {
@@ -523,6 +534,8 @@ function UpdateUser()
     $employee->Delete();
 
  }
+
+
 
  function getEmploye()
  {

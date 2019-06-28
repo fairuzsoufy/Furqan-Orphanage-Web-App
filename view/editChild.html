@@ -18,14 +18,17 @@ $(document).ready(function ()
  
                 data: data,
                 columns: [
+
                 { 'data': 'name' },
-                { 'data': 'birthDate' },
                 { 'data': 'nationalId' },
+                { 'data': 'shoe_size' },
+                { 'data': 'clothes_size' },
+                { 'data': 'nationalId' }, //sana derasya
                 {
                     'data': null,
                     'render': function (data, type, row) 
                     {
-                    return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
+                    return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-edit"></i>تعديل</button>';
                     }
                 },
                 {
@@ -37,7 +40,11 @@ $(document).ready(function ()
                 }
                 ]
             });
-        }
+        },
+        error: function(jqXHR, textStatus, errorThrown)
+        {
+            alert("Failed to load table!");
+        } 
     });
 });
 function showFields(id)
@@ -132,39 +139,16 @@ function showFields(id)
  });
 
  $('#supervisor').selectpicker();
- 
- // if(child.gender==1)
- // {
- // maleRadio.Checked = true;
- // }
- // else
- // { 
- // femaleRadio.Checked = true;
- // }
 
- 
  }
  
  });
 }
-// function checkInputs()
-// { var empty = true;
-//     $('input[type="text"]').each(function(){
-//                 if($.trim($(this).val())== '')
-//                 {
-//                     empty =false;
-//                    return empty;
-//                 }
-//                 });
-//                 return empty;
-// }
+
 function UpdateChild(btn)
  {
  event.preventDefault();
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        
+     
 
 var date1 = new Date($('#DOB').val());
             day1 = date1.getDate();
@@ -298,7 +282,7 @@ function deletechild(id)
                 success: function(data2)
                 {
                     alert("deleted Successfully!");
-                    location.reload();
+                    //location.reload();
                 },
                 error: function(jqXHR, textStatus, errorThrown)
                 {
@@ -424,40 +408,39 @@ function filterBy()
             {
                 
                 var childData = JSON.parse(data);
-                //alert(childData.length);
                 if(childData==false)
                 {
-                    //$("#dtBasicExample").dataTable().fnDestroy();
                     $('#dtBasicExample').dataTable().fnClearTable();
-                    //var table = $('#dtBasicExample').DataTable();
                 }
                 else
                 {
                     $("#dtBasicExample").dataTable().fnDestroy();
                     var table = $('#dtBasicExample').dataTable
-                ({
-                    data: childData,
-                    columns: 
-                    [
-                        { 'data': 'name' },
-                        { 'data': 'birth_date' },
-                        { 'data': 'national_id' },
-                        {
-                            'data': null,
-                            'render': function (data, type, row) 
+                    ({
+                        data: childData,
+                        columns: 
+                        [
+                            { 'data': 'name' },
+                            { 'data': 'national_id' },
+                            { 'data': 'shoe_size' },
+                            { 'data': 'clothes_size' },
+                            { 'data': 'national_id' }, //sana derasya
                             {
-                            return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
-                            }
-                        },
-                        {
-                            'data': null,
-                            'render': function (data, type, row) 
+                                'data': null,
+                                'render': function (data, type, row) 
+                                {
+                                return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-edit"></i>تعديل</button>';
+                                }
+                            },
                             {
-                            return '<button class="btn" onclick="deletechild('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                                'data': null,
+                                'render': function (data, type, row) 
+                                {
+                                return '<button class="btn" onclick="deletechild('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                                }
                             }
-                        }
-                    ]
-                });
+                        ]
+                    });
                 }
                 
                 
@@ -588,8 +571,10 @@ function EditCheckReportNum()
  <thead>
  <tr>
  <th class="th-sm">الاسم </th>
- <th class="th-sm">تاريخ الميلاد</th>
  <th class="th-sm">الرقم القومي</th>
+ <th class="th-sm">الملابس </th>
+ <th class="th-sm">الاحذيه </th>
+ <th class="th-sm">سنه دراسيه </th>
  <th class="th-sm">تعديل </th>
  <th class="th-sm">مسح</th>
  </tr>

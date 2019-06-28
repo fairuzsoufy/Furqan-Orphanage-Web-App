@@ -105,29 +105,65 @@ function deleteEmployee(id)
               
     });	
  }
- function deleteUser(id)
- {
-     
-    var data = new FormData();
-    data.append('method', 'deleteUser');
-            data.append('id',id);
-            jQuery.ajax ({
+    
+    function deleteUser(id)
+    {
+        if (confirm("حذف الموظف")) 
+        {
+            var person = prompt("سبب المغادره:", "");
+            if(person === null)
+            {
+                //do nthn
+            }
+            else
+            {
+                var data = new FormData();
+                data.append('method', 'deleteUser');
+                data.append('id',id);
+                jQuery.ajax 
+                ({
+                    url: "UserController.php",
+                    data: data,
+                    type: "POST",
+                    cache: false,
+                    processData: false, // Don't process the files
+                    contentType: false,
+                    success:function(data2)
+                    {
+                        alert("Employee Deleted");
+                        
+
+                        data.append('method', 'addReason');
+                        data.append('id',id);
+                        data.append('reason',person);
+                        jQuery.ajax 
+                        ({
+                            url: "UserController.php",
+                            data: data,
+                            type: "POST",
+                            cache: false,
+                            processData: false, // Don't process the files
+                            contentType: false,
+                            success:function(data2)
+                            {
+                                location.reload();
+                            }
+                                
+                        });
+                    }
+                        
+                });
+            }
+            	
+        }
+        else 
+        {
+            //nthn   
+        }
         
-        url: "UserController.php",
-        data: data,
-        type: "POST",
-        cache: false,
-            processData: false, // Don't process the files
-            contentType: false,
-      success:function(data2)
-      {
-       
-          alert("done");
-            location.reload();
-      }
-              
-    });	
- }
+        
+    }
+
 $(function()
 	{
         $("#update_employee_form").submit(function(e)
@@ -358,6 +394,8 @@ $(document).ready(function ()
     
 function filterBy()
 {
+   
+
     var e = document.getElementById("choices");
     var strUser = e.options[e.selectedIndex].value;
     $.support.cors = true;
@@ -372,43 +410,100 @@ function filterBy()
             contentType: false,
             success:function(data)
             {
-                
                 var childData = JSON.parse(data);
-                //alert(childData.length);
+
+                // if there is no data 
                 if(childData==false)
                 {
-                    //$("#dtBasicExample").dataTable().fnDestroy();
                     $('#dtBasicExample').dataTable().fnClearTable();
-                    //var table = $('#dtBasicExample').DataTable();
                 }
                 else
                 {
-                    $("#dtBasicExample").dataTable().fnDestroy();
-                    var table = $('#dtBasicExample').dataTable
-                ({
-                    data: childData,
-                    columns: 
-                    [
-                        { 'data': 'name' },
-                        { 'data': 'national_id' },
-                        { 'data': 'gender' },
-                        {
-                            'data': null,
-                            'render': function (data, type, row) 
-                            {
-                            return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
-                            }
-                        },
-                        {
-                            'data': null,
-                            'render': function (data, type, row) 
-                            {
-                            return '<button class="btn" onclick="deletechild('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
-                            }
-                        }
-                    ]
-                });
+                    //if current employee
+                    if(strUser==3)
+                    {
+                        $("#secondTable").hide();
+                        $("#mainTable").show();
+                        $("#dtBasicExample").dataTable().fnDestroy();
+                        var table = $('#dtBasicExample').dataTable
+                        ({
+                            data: childData,
+                            columns: 
+                            [
+                                { 'data': 'name' },
+                                { 'data': 'national_id' },
+                                { 'data': null,
+                                    'render': function (data, type, row) 
+                                    {
+                                        var x=data.gender;
+                                        if(x==0)
+                                        {
+                                            return 'ذكر';
+                                        }
+                                        else
+                                        {
+                                            return "انثي";
+                                        }
+                                        
+                                    } 
+                                },
+                                {
+                                    'data': null,
+                                    'render': function (data, type, row) 
+                                    {
+                                        return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-edit"></i>تعديل</button>';
+                                    }
+                                },
+                                {
+                                    'data': null,
+                                    'render': function (data, type, row) 
+                                    {
+                                        return '<button class="btn" onclick="deleteUser('+row.id+')"><i class="fa fa-trash"></i>مسح</button>';
+                                    }
+                                }
+                            ]
+                        });
+                    }
+                    //if past employee
+                    else
+                    {
+                        $("#secondTable").show();
+                        $("#mainTable").hide();
+                        $("#deletedTable").dataTable().fnDestroy();
+                        var table = $('#deletedTable').dataTable
+                        ({
+                            data: childData,
+                            columns: 
+                            [
+                                { 'data': 'name' },
+                                { 'data': 'national_id' },
+                                { 'data': null,
+                                    'render': function (data, type, row) 
+                                    {
+                                        var x=data.gender;
+                                        if(x==0)
+                                        {
+                                            return 'ذكر';
+                                        }
+                                        else
+                                        {
+                                            return "انثي";
+                                        }
+                                        
+                                    } 
+                                },
+                                {
+                                    'data': null,
+                                    'render': function (data, type, row) 
+                                    {
+                                    return '<button class="btn" onclick="showFields('+row.id+')"><i class="fa fa-trash"></i>تعديل</button>';
+                                    }
+                                }
+                            ]
+                        });
+                    }
                 }
+                
                 
                 
                 
@@ -423,37 +518,60 @@ function filterBy()
 
 }
     
-    </script>
+</script>
  
 <div class="restOfForm container-fluid">
 
+    
     <div class="row tester">
       <div class="container">
        <div style="width:100%; margin-left: auto;margin-right: auto; text-align:center; padding-top:20px;padding-bottom:20px;"> 
         <h1> تفاصيل الموظفون</h1></div>
-        <select id="choices" onchange="filterBy()">
-            <option disabled selected value>اختيار الموظفون  </option> 
-            <option value="3" >الحاليون</option>
-            <option value="4" >السابقون</option>
-            
-                           
-        </select>
-        <table id="dtBasicExample" class="table table-striped listTable" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th class="th-sm">الاسم </th>
-                    <th class="th-sm">الرقم القومي</th>
-                    <th class="th-sm">الجنس</th>
-                    <th class="th-sm">تعديل </th>
-                    <th class="th-sm">مسح</th>
-                </tr>
-                <tbody>
+        <div style="text-align: center; margin:0 auto;">
+            <select id="choices" onchange="filterBy()">
+                <option disabled selected value>اختيار الموظفون  </option> 
+                <option value="3" >الحاليون</option>
+                <option value="4" >السابقون</option>   
+            </select>
+        </div>
+        
+        <div id="mainTable">
+            <table id="dtBasicExample" class="table table-striped listTable" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th class="th-sm">الاسم </th>
+                        <th class="th-sm">الرقم القومي</th>
+                        <th class="th-sm">الجنس</th>
+                        <th class="th-sm">تعديل </th>
+                        <th class="th-sm">مسح</th>
+                    </tr>
+                    <tbody>
+                    
+                    </tbody>
+                </thead>      
+            </table>
+        </div>
+        
+
+        <!-- deleted employee table -->
+        <div id="secondTable">
+            <table id="deletedTable" class="table table-striped listTable" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th class="th-sm">الاسم </th>
+                        <th class="th-sm">الرقم القومي</th>
+                        <th class="th-sm">الجنس</th>
+                        <th class="th-sm">سبب المغادره </th>
+                    </tr>
+                    <tbody>
+                    
+                    </tbody>
+                </thead>
                 
-                </tbody>
-            </thead>
-            
-                            
-        </table>
+                                
+            </table>
+        </div>
+        
         </div>
     </div>
 
@@ -555,77 +673,75 @@ function filterBy()
 </div>
 <script type="text/javascript">
     $("#nonSystemuser1").hide();
-	$("#username").hide();
+	
 	$("#pass").hide();
+    $("#secondTable").hide();
 	$("#username").hide();
 	$("#hide").hide();
 	$("#hidee").hide();
 	$("#togg").hide();
-var today = new Date();
 
-var dd = today.getDate();
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1;
+    var yyy = today.getFullYear()-1;
+    var y = today.getFullYear();
+    var yyyy = today.getFullYear()-21;
+    var yy = today.getFullYear()-80;
+    if(dd<10)
+    {
+        dd='0'+dd
 
-var mm = today.getMonth()+1;
+    }
+    if(mm<10)
+    {
 
-var yyy = today.getFullYear()-1;
+        mm='0'+mm
 
-var y = today.getFullYear();
+    }
 
-var yyyy = today.getFullYear()-21;
+        minDate=yy+'-'+mm+'-'+dd;
 
-var yy = today.getFullYear()-80;
+        max = yyyy+'-'+mm+'-'+dd;
 
-if(dd<10){
+        min=yyy+'-'+mm+'-'+dd;
 
-	dd='0'+dd
+        today = y+'-'+mm+'-'+dd;
 
-		}
+        
 
-	if(mm<10){
+        document.getElementById("DOB").setAttribute("max", max);
 
-	mm='0'+mm
+        document.getElementById("DOB").setAttribute("min", minDate);
 
-		}
+        document.getElementById("DOW").setAttribute("min", min);
 
-	minDate=yy+'-'+mm+'-'+dd;
-
-	max = yyyy+'-'+mm+'-'+dd;
-
-	min=yyy+'-'+mm+'-'+dd;
-
-	today = y+'-'+mm+'-'+dd;
-
-	
-
-	document.getElementById("DOB").setAttribute("max", max);
-
-	document.getElementById("DOB").setAttribute("min", minDate);
-
-	document.getElementById("DOW").setAttribute("min", min);
-
-	document.getElementById("DOW").setAttribute("max", today);
+        document.getElementById("DOW").setAttribute("max", today);
 
 
 
-	$(".toggle-password").click(function() {
+        $(".toggle-password").click(function() {
 
 
 
-$(this).toggleClass("fa-eye fa-eye-slash");
+    $(this).toggleClass("fa-eye fa-eye-slash");
 
-var input = $($(this).attr("toggle"));
+    var input = $($(this).attr("toggle"));
 
-if (input.attr("type") == "password") {
+    if (input.attr("type") == "password") 
+    {
 
-input.attr("type", "text");
+        input.attr("type", "text");
 
-} else {
+    } 
+    else 
+    {
 
-input.attr("type", "password");
+        input.attr("type", "password");
 
-}
+    }
 
-});
+    });
 
 	   
 
